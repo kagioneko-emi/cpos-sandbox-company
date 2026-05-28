@@ -5,7 +5,7 @@ from fastapi.templating import Jinja2Templates
 import json
 import os
 import threading
-from main_controller import main as run_cycle
+from main_controller import CorporateCycle
 
 app = FastAPI()
 
@@ -17,14 +17,6 @@ templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
 LOG_DIR = "cpos"
 AUDIT_LOG = os.path.join(LOG_DIR, "audit_log.jsonl")
 POINTERS_LOG = os.path.join(LOG_DIR, "pointers.jsonl")
-
-# @app.middleware("http")
-# async def enforce_https(request: Request, call_next):
-#     # Skip for local health checks if needed, but generally enforce
-#     if request.url.scheme == "http" and not os.environ.get("DEBUG"):
-#         url = request.url.replace(scheme="https")
-#         return RedirectResponse(url)
-#     return await call_next(request)
 
 @app.get("/", response_class=HTMLResponse)
 async def read_item(request: Request):
@@ -41,7 +33,7 @@ async def get_logs():
                         logs.append(json.loads(line))
                     except:
                         continue
-    return {"logs": logs}
+    return {"logs": logs[::-1]} # Return reversed for latest first
 
 @app.get("/api/pointers")
 async def get_pointers():
@@ -54,13 +46,26 @@ async def get_pointers():
                         pointers.append(json.loads(line))
                     except:
                         continue
-    return {"pointers": pointers}
+    return {"pointers": pointers[::-1]}
+
+@app.get("/api/state")
+async def get_state():
+    cycle = CorporateCycle()
+    state = cycle.load_state()
+    return {"state": state}
 
 @app.post("/api/trigger")
 async def trigger_cycle(background_tasks: BackgroundTasks):
-    # Run the main cycle in the background
-    background_tasks.add_task(run_cycle)
+    cycle = CorporateCycle()
+    background_tasks.add_task(cycle.run_to_review)
     return {"status": "triggered"}
+
+@app.post("/api/decide")
+async def make_decision(data: dict, background_tasks: BackgroundTasks):
+    decision = data.get("decision") # "APPROVE" or "REJECT"
+    cycle = CorporateCycle()
+    background_tasks.add_task(cycle.complete_cycle, decision)
+    return {"status": "decision_received"}
 
 if __name__ == "__main__":
     import uvicorn

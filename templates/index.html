@@ -1,246 +1,196 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CPOS Agent Sandbox Company | Monitoring</title>
+    <title>CPOS Agent Sandbox Company</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        :root {
-            --bg-color: #0d1117;
-            --panel-bg: #161b22;
-            --border-color: #30363d;
-            --text-main: #e6edf3;
-            --text-muted: #8b949e;
-            --accent-blue: #1f6feb;
-            --accent-green: #238636;
-            --accent-red: #f85149;
-            --accent-purple: #8957e5;
-        }
-
-        body {
-            font-family: 'Inter', -apple-system, sans-serif;
-            background: var(--bg-color);
-            color: var(--text-main);
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        header {
-            padding: 15px 30px;
-            background: var(--panel-bg);
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .container {
-            display: grid;
-            grid-template-columns: 350px 1fr 300px;
-            flex: 1;
-            overflow: hidden;
-        }
-
-        .panel {
-            border-right: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        .panel-header {
-            padding: 10px 20px;
-            background: rgba(255,255,255,0.05);
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .scrollable {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px;
-        }
-
-        /* Timeline Feed */
-        .log-entry {
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 1px dashed var(--border-color);
-        }
-
-        .log-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 5px;
-        }
-
-        .agent-name {
-            font-weight: bold;
-            font-size: 0.85rem;
-            color: var(--accent-blue);
-        }
-
-        .timestamp {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-        }
-
-        .event-type {
-            font-size: 0.9rem;
-            margin-bottom: 5px;
-        }
-
-        /* Pointers List */
-        .pointer-item {
-            background: var(--panel-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            padding: 10px;
-            margin-bottom: 10px;
-            font-size: 0.85rem;
-        }
-
-        .pointer-type {
-            display: inline-block;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 0.7rem;
-            margin-bottom: 5px;
-        }
-
-        .type-code { background: var(--accent-purple); }
-        .type-finding { background: var(--accent-red); }
-
-        /* Controls */
-        .btn {
-            background: var(--accent-blue);
-            color: white;
-            border: none;
-            padding: 8px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: opacity 0.2s;
-        }
-
-        .btn:hover { opacity: 0.8; }
-
-        pre {
-            background: #000;
-            padding: 10px;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            white-space: pre-wrap;
-            word-break: break-all;
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500&display=swap');
+        body { font-family: 'Fira Code', monospace; background-color: #0d1117; color: #e6edf3; }
+        .log-entry { border-left: 2px solid #30363d; transition: all 0.2s; }
+        .log-entry:hover { background-color: #161b22; border-left-color: #58a6ff; }
+        .badge-system { background-color: #21262d; color: #8b949e; }
+        .badge-agent { background-color: #238636; color: #ffffff; }
+        .badge-finding { background-color: #da3633; color: #ffffff; }
     </style>
 </head>
-<body>
-    <header>
-        <div>
-            <h1 style="margin:0; font-size: 1.2rem;">🛡️ CPOS Agent Sandbox Company</h1>
-            <span id="status-badge" style="color: var(--text-muted); font-size: 0.8rem;">● System Idle</span>
-        </div>
-        <button class="btn" onclick="triggerCycle()">Start Work Cycle</button>
-    </header>
-
-    <div class="container">
-        <!-- Left: Corporate Timeline -->
-        <div class="panel">
-            <div class="panel-header">Corporate Timeline</div>
-            <div id="timeline" class="scrollable">
-                <p class="text-muted">No activity recorded.</p>
+<body class="p-4 md:p-8">
+    <div class="max-w-6xl mx-auto">
+        <header class="flex justify-between items-center mb-8 border-b border-gray-700 pb-4">
+            <div>
+                <h1 class="text-2xl font-bold flex items-center gap-2">
+                    <span class="text-blue-500">🛡️</span> CPOS Agent Sandbox Company
+                </h1>
+                <p class="text-gray-400 text-sm mt-1">Autonomous AI Development Lifecycle Simulator</p>
             </div>
-        </div>
+            <div class="flex gap-4">
+                <div id="status-indicator" class="flex items-center gap-2 px-3 py-1 rounded-full bg-gray-800 text-xs text-gray-300">
+                    <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> Ready
+                </div>
+                <button onclick="triggerCycle()" id="start-btn" class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded font-bold transition-all shadow-lg shadow-blue-900/20">
+                    Start Work Cycle
+                </button>
+            </div>
+        </header>
 
-        <!-- Center: Live Output / Details -->
-        <div class="panel">
-            <div class="panel-header">Agent Communication & Details</div>
-            <div id="details" class="scrollable">
-                <div class="card">
-                    <h2>Select an event to see details</h2>
+        <!-- Human Approval Panel (Hidden by default) -->
+        <div id="approval-panel" class="hidden mb-8 bg-blue-900/20 border border-blue-500/50 p-6 rounded-lg animate-bounce-short">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <div>
+                    <h2 class="text-xl font-bold text-blue-400">🚨 Human Approval Required</h2>
+                    <p id="approval-msg" class="text-gray-300 mt-1">AI has finished the review. Please verify the findings and decide.</p>
+                </div>
+                <div class="flex gap-2 md:gap-4">
+                    <button onclick="makeDecision('REJECT')" class="bg-red-600 hover:bg-red-700 px-4 md:px-8 py-3 rounded font-bold transition-all text-sm md:text-base">REJECT</button>
+                    <button onclick="makeDecision('RETRY')" class="bg-yellow-600 hover:bg-yellow-700 px-4 md:px-8 py-3 rounded font-bold transition-all text-sm md:text-base">RETRY (Fix)</button>
+                    <button onclick="makeDecision('APPROVE')" class="bg-green-600 hover:bg-green-700 px-4 md:px-8 py-3 rounded font-bold transition-all border-2 border-white/20 text-sm md:text-base">APPROVE</button>
                 </div>
             </div>
         </div>
 
-        <!-- Right: Memory Layer (Pointers) -->
-        <div class="panel" style="border-right: none;">
-            <div class="panel-header">Context Pointers (#ctx)</div>
-            <div id="pointers" class="scrollable">
-                <p class="text-muted">Memory empty.</p>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Left: Timeline -->
+            <div class="lg:col-span-2">
+                <h2 class="text-lg font-bold mb-4 flex items-center gap-2">
+                    <span class="w-2 h-6 bg-blue-500 rounded"></span> Corporate Timeline
+                </h2>
+                <div id="log-container" class="space-y-2 max-h-[70vh] overflow-y-auto pr-2">
+                    <!-- Logs will appear here -->
+                    <div class="p-4 text-center text-gray-500">Waiting for first cycle...</div>
+                </div>
+            </div>
+
+            <!-- Right: Pointers -->
+            <div>
+                <h2 class="text-lg font-bold mb-4 flex items-center gap-2">
+                    <span class="w-2 h-6 bg-purple-500 rounded"></span> Context Pointers (#ctx)
+                </h2>
+                <div id="pointer-container" class="space-y-4">
+                    <!-- Pointers will appear here -->
+                    <div class="p-4 bg-gray-900/50 rounded border border-gray-800 text-sm text-gray-500 italic">
+                        No active pointers detected.
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
+        let isPolling = false;
+
         async function fetchLogs() {
-            const res = await fetch('/api/logs');
-            const data = await res.json();
-            const timeline = document.getElementById('timeline');
-            timeline.innerHTML = '';
-            
-            data.logs.reverse().forEach(log => {
-                const div = document.createElement('div');
-                div.className = 'log-entry';
-                div.onclick = () => showDetail(log);
-                div.style.cursor = 'pointer';
-                div.innerHTML = `
-                    <div class="log-header">
-                        <span class="agent-name">${log.agent}</span>
-                        <span class="timestamp">${new Date(log.timestamp).toLocaleTimeString()}</span>
-                    </div>
-                    <div class="event-type">${log.event}</div>
-                `;
-                timeline.appendChild(div);
-            });
+            try {
+                const res = await fetch('/api/logs');
+                const data = await res.json();
+                const container = document.getElementById('log-container');
+                
+                if (data.logs.length > 0) {
+                    container.innerHTML = data.logs.map(log => `
+                        <div class="log-entry p-3 rounded bg-gray-900/30">
+                            <div class="flex justify-between items-start mb-1">
+                                <span class="text-xs font-bold px-2 py-0.5 rounded ${log.agent === 'System' ? 'badge-system' : 'badge-agent'}">
+                                    ${log.agent}
+                                </span>
+                                <span class="text-[10px] text-gray-500">${new Intl.DateTimeFormat('ja-JP', { timeZone: 'Asia/Tokyo', hour: '2-digit', minute: '2-digit', second: '2-digit' }).format(new Date(log.timestamp))} (JST)</span>
+                            </div>
+                            <div class="text-sm font-medium text-blue-300 mb-1">${log.event}</div>
+                            <div class="text-xs text-gray-400 overflow-x-auto whitespace-pre-wrap">${JSON.stringify(log.metadata, null, 2)}</div>
+                        </div>
+                        ${log.event === 'session_started' ? '<div class="w-full h-px bg-gradient-to-r from-transparent via-blue-500 to-transparent my-4 opacity-50"></div>' : ''}
+                        ${log.event === 'session_completed' ? '<div class="w-full border-t-2 border-dashed border-gray-700 my-6"></div>' : ''}
+                    `).join('');
+                }
+            } catch (e) { console.error(e); }
         }
 
         async function fetchPointers() {
-            const res = await fetch('/api/pointers');
-            const data = await res.json();
-            const container = document.getElementById('pointers');
-            container.innerHTML = '';
-            
-            data.pointers.reverse().forEach(p => {
-                const div = document.createElement('div');
-                div.className = 'pointer-item';
-                div.innerHTML = `
-                    <span class="pointer-type type-${p.type}">${p.type.toUpperCase()}</span>
-                    <div style="margin-bottom: 5px;"><code>${p.location}</code></div>
-                    <div style="color: var(--text-muted); font-size: 0.75rem;">${p.summary}</div>
-                `;
-                container.appendChild(div);
-            });
+            try {
+                const res = await fetch('/api/pointers');
+                const data = await res.json();
+                const container = document.getElementById('pointer-container');
+                
+                if (data.pointers.length > 0) {
+                    container.innerHTML = data.pointers.map(ptr => `
+                        <div class="p-3 bg-gray-800/40 rounded border border-gray-700 relative overflow-hidden group">
+                            <div class="absolute top-0 left-0 w-1 h-full ${ptr.type === 'finding' ? 'bg-red-500' : 'bg-green-500'}"></div>
+                            <div class="flex justify-between text-[10px] font-bold uppercase mb-1 ${ptr.type === 'finding' ? 'text-red-400' : 'text-green-400'}">
+                                <span>${ptr.type}</span>
+                            </div>
+                            <div class="text-xs font-bold text-gray-200 truncate mb-1">${ptr.location}</div>
+                            <div class="text-[11px] text-gray-400 leading-relaxed line-clamp-2">${ptr.summary}</div>
+                        </div>
+                    `).join('');
+                }
+            } catch (e) { console.error(e); }
         }
 
-        function showDetail(log) {
-            const details = document.getElementById('details');
-            details.innerHTML = `
-                <h3>${log.agent} > ${log.event}</h3>
-                <p class="timestamp">${log.timestamp}</p>
-                <pre>${JSON.stringify(log.metadata, null, 2)}</pre>
-            `;
+        async function checkState() {
+            try {
+                const res = await fetch('/api/state');
+                const data = await res.json();
+                const panel = document.getElementById('approval-panel');
+                const startBtn = document.getElementById('start-btn');
+                const indicator = document.getElementById('status-indicator');
+                
+                if (data.state && data.state.status === 'WAITING_FOR_HUMAN') {
+                    panel.classList.remove('hidden');
+                    startBtn.disabled = true;
+                    startBtn.classList.add('opacity-50');
+                    indicator.innerHTML = '<span class="w-2 h-2 rounded-full bg-yellow-500 animate-pulse"></span> Action Required';
+                    indicator.classList.replace('bg-gray-800', 'bg-yellow-900/30');
+                    document.getElementById('approval-msg').innerText = `AI Decision: ${data.state.ai_decision}. Please make the final release decision for ${data.state.spec.project_name}.`;
+                } else {
+                    panel.classList.add('hidden');
+                    startBtn.disabled = false;
+                    startBtn.classList.remove('opacity-50');
+                    indicator.innerHTML = '<span class="w-2 h-2 rounded-full bg-green-500"></span> Ready';
+                    indicator.classList.replace('bg-yellow-900/30', 'bg-gray-800');
+                }
+            } catch (e) { console.error(e); }
         }
 
         async function triggerCycle() {
-            document.getElementById('status-badge').innerText = '● Cycle in progress...';
-            document.getElementById('status-badge').style.color = 'var(--accent-blue)';
+            const startBtn = document.getElementById('start-btn');
+            startBtn.disabled = true;
+            startBtn.innerText = "Running...";
+            
             await fetch('/api/trigger', { method: 'POST' });
-            setTimeout(updateAll, 2000); // Polling delay
+            
+            // Start aggressive polling for updates
+            if (!isPolling) {
+                isPolling = true;
+                const poll = setInterval(async () => {
+                    await fetchLogs();
+                    await fetchPointers();
+                    await checkState();
+                    
+                    const btn = document.getElementById('start-btn');
+                    const res = await fetch('/api/state');
+                    const data = await res.json();
+                    if (!data.state || data.state.status !== 'RUNNING') {
+                        btn.innerText = "Start Work Cycle";
+                    }
+                }, 3000);
+            }
         }
 
-        function updateAll() {
-            fetchLogs();
-            fetchPointers();
+        async function makeDecision(decision) {
+            await fetch('/api/decide', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ decision })
+            });
+            setTimeout(() => {
+                checkState();
+                fetchLogs();
+            }, 1000);
         }
 
-        setInterval(updateAll, 3000);
-        updateAll();
+        // Initial fetch
+        fetchLogs();
+        fetchPointers();
+        setInterval(checkState, 5000);
     </script>
 </body>
 </html>
