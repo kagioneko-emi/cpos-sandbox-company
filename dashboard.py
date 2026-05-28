@@ -60,6 +60,35 @@ async def trigger_cycle(background_tasks: BackgroundTasks):
     background_tasks.add_task(cycle.run_to_review)
     return {"status": "triggered"}
 
+@app.post("/api/webhook")
+async def handle_webhook(request: Request, background_tasks: BackgroundTasks):
+    try:
+        data = await request.json()
+        
+        # Check if it's a GitHub Issue event or comment
+        if 'issue' in data:
+            issue_title = data['issue'].get('title', 'Unknown Issue')
+            
+            # If it's a new issue
+            if data.get('action') == 'opened':
+                issue_body = data['issue'].get('body', '')
+                instruction = f"Issue Title: {issue_title}\nDescription: {issue_body}"
+            # If it's a comment on an existing issue
+            elif data.get('action') == 'created' and 'comment' in data:
+                comment_body = data['comment'].get('body', '')
+                instruction = f"Issue Title: {issue_title}\nRequested Change: {comment_body}"
+            else:
+                return {"status": "ignored_action"}
+            
+            cycle = CorporateCycle()
+            background_tasks.add_task(cycle.run_to_review, instruction)
+            return {"status": "cycle_initiated_from_webhook", "issue": issue_title}
+            
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+    
+    return {"status": "ignored"}
+
 @app.post("/api/decide")
 async def make_decision(data: dict, background_tasks: BackgroundTasks):
     decision = data.get("decision") # "APPROVE" or "REJECT"

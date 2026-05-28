@@ -2,9 +2,12 @@ import json
 from .base_agent import BaseAgent
 
 class PlannerAgent(BaseAgent):
-    def generate_spec(self):
+    def generate_spec(self, custom_prompt=None):
         system_prompt = "You are a Senior Product Manager. Generate a JSON specification for a simple Python tool. Output MUST be valid JSON only."
-        user_prompt = "Design a small Python CLI tool. Provide: project_name, description, requirements (list), and target_file (path in outputs/python_tools/)."
+        if custom_prompt:
+            user_prompt = f"Design a Python tool based on this GitHub Issue request:\n{custom_prompt}\n\nProvide: project_name, description, requirements (list), and target_file (path in outputs/python_tools/)."
+        else:
+            user_prompt = "Design a small Python CLI tool. Provide: project_name, description, requirements (list), and target_file (path in outputs/python_tools/)."
         
         response_text = self.call_ai(system_prompt, user_prompt)
         

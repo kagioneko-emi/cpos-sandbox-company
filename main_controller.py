@@ -30,13 +30,13 @@ class CorporateCycle:
                 return json.load(f)
         return None
 
-    def run_to_review(self):
+    def run_to_review(self, custom_prompt=None):
         print("=== CPOS Agent Sandbox Company: AI Edition ===")
-        self.cpos.log_audit("System", "session_started")
+        self.cpos.log_audit("System", "session_started", {"custom_prompt": custom_prompt} if custom_prompt else {})
 
         # 1. Planning
         print("\n[Phase 1] Planning...")
-        spec = self.planner.generate_spec()
+        spec = self.planner.generate_spec(custom_prompt)
         
         # 2. Development
         print("\n[Phase 2] Development...")
