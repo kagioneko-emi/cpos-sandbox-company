@@ -140,12 +140,12 @@
 
         async function previewArtifact(filename) {
             try {
-                const res = await fetch(\`/api/artifacts/\${filename}\`);
+                const res = await fetch(`/api/artifacts/${filename}`);
                 const data = await res.json();
-                document.getElementById('modal-filename').innerHTML = \`
+                document.getElementById('modal-filename').innerHTML = `
                     <span class="text-xs px-2 py-0.5 bg-blue-900/50 rounded uppercase">Python</span>
-                    \${data.file_name}
-                \`;
+                    ${data.file_name}
+                `;
                 document.getElementById('code-content').innerText = data.code;
                 document.getElementById('code-modal').classList.remove('hidden');
             } catch (e) { console.error(e); }
