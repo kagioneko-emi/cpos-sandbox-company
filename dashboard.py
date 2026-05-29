@@ -54,6 +54,17 @@ async def get_state():
     state = cycle.load_state()
     return {"state": state}
 
+@app.get("/api/code")
+async def get_code():
+    cycle = CorporateCycle()
+    state = cycle.load_state()
+    if state and "file_path" in state:
+        file_path = state["file_path"]
+        if os.path.exists(file_path):
+            with open(file_path, "r", encoding="utf-8") as f:
+                return {"code": f.read(), "file_name": os.path.basename(file_path)}
+    return {"code": "", "file_name": "none"}
+
 @app.post("/api/trigger")
 async def trigger_cycle(background_tasks: BackgroundTasks):
     cycle = CorporateCycle()

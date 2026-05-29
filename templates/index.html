@@ -42,9 +42,29 @@
                     <p id="approval-msg" class="text-gray-300 mt-1">AI has finished the review. Please verify the findings and decide.</p>
                 </div>
                 <div class="flex gap-2 md:gap-4">
+                    <button onclick="viewCode()" class="bg-gray-700 hover:bg-gray-600 px-4 md:px-6 py-3 rounded font-bold transition-all text-sm md:text-base border border-gray-500">View Code</button>
                     <button onclick="makeDecision('REJECT')" class="bg-red-600 hover:bg-red-700 px-4 md:px-8 py-3 rounded font-bold transition-all text-sm md:text-base">REJECT</button>
                     <button onclick="makeDecision('RETRY')" class="bg-yellow-600 hover:bg-yellow-700 px-4 md:px-8 py-3 rounded font-bold transition-all text-sm md:text-base">RETRY (Fix)</button>
                     <button onclick="makeDecision('APPROVE')" class="bg-green-600 hover:bg-green-700 px-4 md:px-8 py-3 rounded font-bold transition-all border-2 border-white/20 text-sm md:text-base">APPROVE</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Code Viewer Modal -->
+        <div id="code-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+            <div class="bg-gray-900 border border-gray-700 w-full max-w-4xl max-h-[90vh] rounded-lg flex flex-col shadow-2xl">
+                <div class="p-4 border-b border-gray-700 flex justify-between items-center">
+                    <h3 id="modal-filename" class="font-bold text-blue-400 flex items-center gap-2">
+                        <span class="text-xs px-2 py-0.5 bg-blue-900/50 rounded uppercase">Python</span>
+                        code_output.py
+                    </h3>
+                    <button onclick="closeModal()" class="text-gray-400 hover:text-white text-xl">&times;</button>
+                </div>
+                <div class="p-4 overflow-auto flex-1">
+                    <pre class="text-sm leading-relaxed"><code id="code-content" class="whitespace-pre"></code></pre>
+                </div>
+                <div class="p-4 border-t border-gray-700 text-right">
+                    <button onclick="closeModal()" class="bg-gray-800 hover:bg-gray-700 px-6 py-2 rounded text-sm font-bold border border-gray-600">Close</button>
                 </div>
             </div>
         </div>
@@ -185,6 +205,23 @@
                 checkState();
                 fetchLogs();
             }, 1000);
+        }
+
+        async function viewCode() {
+            try {
+                const res = await fetch('/api/code');
+                const data = await res.json();
+                document.getElementById('modal-filename').innerHTML = `
+                    <span class="text-xs px-2 py-0.5 bg-blue-900/50 rounded uppercase">Python</span>
+                    ${data.file_name}
+                `;
+                document.getElementById('code-content').innerText = data.code;
+                document.getElementById('code-modal').classList.remove('hidden');
+            } catch (e) { console.error(e); }
+        }
+
+        function closeModal() {
+            document.getElementById('code-modal').classList.add('hidden');
         }
 
         // Initial fetch
