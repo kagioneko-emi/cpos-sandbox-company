@@ -152,9 +152,9 @@
         }
 
         async function deleteArtifact(filename) {
-            if (!confirm(\`Delete \${filename}?\`)) return;
+            if (!confirm(`Delete ${filename}?`)) return;
             try {
-                await fetch(\`/api/artifacts/\${filename}\`, { method: 'DELETE' });
+                await fetch(`/api/artifacts/${filename}`, { method: 'DELETE' });
                 fetchArtifacts();
             } catch (e) { console.error(e); }
         }
