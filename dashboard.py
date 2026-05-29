@@ -107,6 +107,39 @@ async def make_decision(data: dict, background_tasks: BackgroundTasks):
     background_tasks.add_task(cycle.complete_cycle, decision)
     return {"status": "decision_received"}
 
+# Artifact Management Endpoints
+@app.get("/api/artifacts")
+async def list_artifacts():
+    artifacts = []
+    tools_dir = "outputs/python_tools"
+    if os.path.exists(tools_dir):
+        for filename in os.listdir(tools_dir):
+            if filename.endswith(".py"):
+                file_path = os.path.join(tools_dir, filename)
+                stats = os.stat(file_path)
+                artifacts.append({
+                    "name": filename,
+                    "size": stats.st_size,
+                    "mtime": stats.st_mtime
+                })
+    return {"artifacts": sorted(artifacts, key=lambda x: x["mtime"], reverse=True)}
+
+@app.get("/api/artifacts/{filename}")
+async def read_artifact(filename: str):
+    file_path = os.path.join("outputs/python_tools", filename)
+    if os.path.exists(file_path) and filename.endswith(".py"):
+        with open(file_path, "r", encoding="utf-8") as f:
+            return {"code": f.read(), "file_name": filename}
+    raise HTTPException(status_code=404, detail="File not found")
+
+@app.delete("/api/artifacts/{filename}")
+async def delete_artifact(filename: str):
+    file_path = os.path.join("outputs/python_tools", filename)
+    if os.path.exists(file_path) and filename.endswith(".py"):
+        os.remove(file_path)
+        return {"status": "deleted"}
+    raise HTTPException(status_code=404, detail="File not found")
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8001)
